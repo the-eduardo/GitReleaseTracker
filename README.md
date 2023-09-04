@@ -3,7 +3,8 @@
 ## Overview
 
 GitReleaseTracker is a Discord bot designed to keep your community updated with the latest software releases from your GitHub repository. This bot sends messages to a Discord channel whenever new releases are published. Stay informed and make it easier for your users to access the latest updates.
-
+~ Screenshot:
+[![Print](https://i.imgur.com/pTqewHJ.png)](https://i.imgur.com/pTqewHJ.png)
 ## Table of Contents
 
 - [Requirements](#Requirements)
