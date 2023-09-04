@@ -61,7 +61,6 @@ func readConfig() *Config {
 	requiredEnvVars := []string{
 		"DISCORD_TOKEN",
 		"GITHUB_TOKEN",
-		"GITHUB_OWNER",
 		"GITHUB_REPO",
 		"DISCORD_CHANNEL",
 	}
