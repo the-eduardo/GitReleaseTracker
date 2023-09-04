@@ -1,0 +1,43 @@
+version: '3'
+services:
+  GitReleaseTracker:
+    container_name: GitReleaseTracker1
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DISCORD_TOKEN: discord-token
+      GITHUB_TOKEN: github-token
+      GITHUB_OWNER: github-owner-1
+      GITHUB_REPO: github-repo-1
+      DISCORD_CHANNEL: discord-channel-id-1
+      WAITING_TIME: 60 # Minutes to wait before checking for new releases, max 1440 (24 hours)
+
+#  GitReleaseTracker2:
+#    container_name: GitReleaseTracker2
+#    restart: unless-stopped
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    environment:
+#      DISCORD_TOKEN: discord-token
+#      GITHUB_TOKEN: github-token
+#      GITHUB_OWNER: github-owner-2
+#      GITHUB_REPO: github-repo-2
+#      DISCORD_CHANNEL: discord-channel-id-2
+#      WAITING_TIME: 10
+#
+#  GitReleaseTracker3:
+#    container_name: GitReleaseTracker3
+#    restart: unless-stopped
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    environment:
+#      DISCORD_TOKEN: discord-token
+#      GITHUB_TOKEN: github-token
+#      GITHUB_OWNER: github-owner-3
+#      GITHUB_REPO: github-repo-3
+#      DISCORD_CHANNEL: discord-channel-id-3
+#      WAITING_TIME: 15
