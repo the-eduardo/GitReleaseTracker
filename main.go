@@ -112,7 +112,9 @@ func main() {
 			// If it's a new release, send a message to Discord
 			if newReleaseTag != latestReleaseTag {
 				latestReleaseTag = newReleaseTag
-				message := fmt.Sprintf(`# New release in https://github.com/%s/%s\n> ### Version/Tag: %s\n%s`, cfg.GithubOwner, cfg.GithubRepo, latestReleaseTag, cfg.CustomMessage)
+				message := fmt.Sprintf(`# New release in https://github.com/%s/%s
+> ### Version/Tag: %s
+%s`, cfg.GithubOwner, cfg.GithubRepo, latestReleaseTag, cfg.CustomMessage)
 				sendMessageToDiscord(discord, cfg.DiscordChannel, message)
 			}
 		} else {
