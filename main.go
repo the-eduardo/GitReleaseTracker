@@ -36,7 +36,7 @@ func readConfig() *Config {
 	pollIntervalStr := os.Getenv("WAITING_TIME")
 	PollInterval, err := strconv.Atoi(pollIntervalStr)
 	if err != nil {
-		log.Fatalf("failed to parse WAITING_TIME: %v", err)
+		PollInterval = 60
 	}
 	cfg.PollInterval = time.Duration(PollInterval)
 
@@ -105,6 +105,10 @@ func main() {
 				message := fmt.Sprintf("# New release in https://github.com/%s/%s\n> ### Version/Tag: %s", cfg.GithubOwner, cfg.GithubRepo, latestReleaseTag)
 				sendMessageToDiscord(discord, cfg.DiscordChannel, message)
 			}
+		} else {
+			// If there are no releases, send a message to Discord
+			message := fmt.Sprintf("# WARNING! \n ### No releases found in https://github.com/%s/%s", cfg.GithubOwner, cfg.GithubRepo)
+			sendMessageToDiscord(discord, cfg.DiscordChannel, message)
 		}
 
 		// Sleep for the defined interval before checking again
