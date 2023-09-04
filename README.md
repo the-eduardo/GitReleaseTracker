@@ -8,7 +8,7 @@ GitReleaseTracker is a Discord bot designed to keep your community updated with 
 
 - [Requirements](#Requirements)
 - [Getting Started](#getting-started)
-- [Important](#Important)
+- [Note](#Note)
 - [Understanding the Code](#understanding-the-code)
 - [Contributing](#contributing)
 - [License](#license)
@@ -34,7 +34,7 @@ To use GitReleaseTracker, follow these steps:
 git clone https://github.com/the-eduardo/GitReleaseTracker
 ```
 
-3. **Configuration:**
+2. **Configuration:**
    - Add your Tokens `docker-compose.yml` file:
 
      ```env
@@ -46,28 +46,26 @@ git clone https://github.com/the-eduardo/GitReleaseTracker
      WAITING_TIME=60 # Minutes to wait before checking for new releases, max 1440 (24 hours)
      ```
 
-4. **Run the Bot using docker compose:**
+3. **Run the Bot using docker compose:**
 
    ```bash
    docker-compose up -d --build
    ```
-## Important
+## Note
 
-My Dockerfile is set to build an application image that's compatible with `arm64` Linux architectures. This is determined by `GOARCH=arm64 GOOS=linux` in the Go build command within the Dockerfile.
+The Dockerfile is currently configured to build an application image compatible with the `arm64` Linux architecture. This is specified in the Go build command within the Dockerfile using the `GOARCH=arm64` and `GOOS=linux` environment variables.
 
-If you need to run this on a different architecture, you'll need to modify these settings accordingly in the Dockerfile.
+When your target environment differs, you **WILL** need to modify these settings in the Dockerfile. Here's a detailed guide on how to adapt the Dockerfile for different architectures and operating systems:
 
-Here's a quick guide to adapting the Dockerfile for different environments:
+### Changing the Architecture
 
-- ### Changing the Architecture
+The `GOARCH` environment variable sets the target architecture for the build. If you are targeting a different architecture, replace `arm64` with your target architecture. Go supports multiple architectures, such as `amd64` for x86-64, `386` for x86, `arm` for 32-bit ARM, and `arm64` for 64-bit ARM, among others.
 
-The `GOARCH` environment variable sets the target architecture. You can replace `arm64` with your target architecture. Go supports several architectures like `amd64`, `386`, `arm`, `arm64` etc.
+### Changing the Operating System
 
-- ### Changing the Operating System
+The `GOOS` environment variable sets the target operating system for the build. If you are targeting a different operating system, replace `linux` with your target OS. Go supports various operating systems, including `windows`, `darwin` (for macOS), `linux`, and more.
 
-The `GOOS` environment variable sets the target operating system. You can replace `linux` with your target operating system. Go supports several operating systems like `windows`, `darwin` (for macOS), `linux`, etc.
-
-Here's an example of how you might modify the Dockerfile to build for `amd64` architecture on a `windows` system:
+Here's an example of how to modify the Dockerfile to build for the `amd64` architecture on a Linux system:
 
 ```Dockerfile
 # Stage 1: Build the Go application
@@ -76,22 +74,22 @@ LABEL authors="the-eduardo"
 
 WORKDIR /app
 COPY main.go go.mod go.sum ./
-RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build -o app
+RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o app
 
 # Stage 2: Create a minimal runtime image
-FROM alpine:latest
+FROM ubuntu:latest
 
 # Install CA certificates
-RUN apk --no-cache add ca-certificates
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/app /
 
 ENTRYPOINT ["/app"]
 ```
 
-In this example, `GOARCH=amd64` and `GOOS=windows` target 64-bit Windows systems.
+In this example, `GOARCH=amd64` and `GOOS=linux` are set to build for 64-bit Linux systems.
 
-Ensure to check the compatibility of your target architecture and operating system with Go and your application.
+Always verify the resulting Docker image. You can use the `docker run` command to run the image and check if it works as expected.
 ## Understanding the Code
 Written in Go and easily configurable using environment variables. Here are some key components:
 
