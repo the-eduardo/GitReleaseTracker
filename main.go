@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -19,6 +20,7 @@ type Config struct {
 	GithubOwner    string
 	GithubRepo     string
 	DiscordChannel string
+	CustomMessage  string
 	PollInterval   time.Duration
 }
 
@@ -28,9 +30,18 @@ func readConfig() *Config {
 
 	cfg.DiscordToken = os.Getenv("DISCORD_TOKEN")
 	cfg.GithubToken = os.Getenv("GITHUB_TOKEN")
-	cfg.GithubOwner = os.Getenv("GITHUB_OWNER")
-	cfg.GithubRepo = os.Getenv("GITHUB_REPO")
+	inputURL := os.Getenv("GITHUB_REPO")
+	// Split the URL by "/"
+	parts := strings.Split(inputURL, "/")
+	// Check if the URL has the expected number of parts
+	if len(parts) < 2 {
+		log.Fatalf("Invalid GitHub repo! Try something like -the-eduardo/GitReleaseTracker- your input: %s", inputURL)
+	}
+	cfg.GithubOwner = parts[len(parts)-2]
+	cfg.GithubRepo = parts[len(parts)-1]
+
 	cfg.DiscordChannel = os.Getenv("DISCORD_CHANNEL")
+	cfg.CustomMessage = os.Getenv("CUSTOM_DISCORD_MESSAGE")
 
 	// Parse poll interval from environment variable (in minutes)
 	pollIntervalStr := os.Getenv("WAITING_TIME")
@@ -102,7 +113,7 @@ func main() {
 			// If it's a new release, send a message to Discord
 			if newReleaseTag != latestReleaseTag {
 				latestReleaseTag = newReleaseTag
-				message := fmt.Sprintf("# New release in https://github.com/%s/%s\n> ### Version/Tag: %s", cfg.GithubOwner, cfg.GithubRepo, latestReleaseTag)
+				message := fmt.Sprintf(`# New release in https://github.com/%s/%s\n> ### Version/Tag: %s\n%s`, cfg.GithubOwner, cfg.GithubRepo, latestReleaseTag, cfg.CustomMessage)
 				sendMessageToDiscord(discord, cfg.DiscordChannel, message)
 			}
 		} else {
