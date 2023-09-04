@@ -1,42 +1,17 @@
 version: '3'
 services:
   gitreleasetracker:
-    container_name: ContainerName1
+    container_name: GitReleaseTracker
     restart: unless-stopped
+    volumes:
+      - ./repos.json:/repos.json # Send your repos.json file to the container
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
+    environment: # Define your environment variables here
       DISCORD_TOKEN: discord-token
       GITHUB_TOKEN: github-token
-      GITHUB_REPO: github-owner/repo # Example: the-eduardo/GitReleaseTracker
       DISCORD_CHANNEL: discord-channel-id-1
       WAITING_TIME: 60 # Minutes to wait before checking for new releases, max 1440 (24 hours)
       CUSTOM_DISCORD_MESSAGE: <@someid> check this release # Optional: custom message to send to discord
-
-#  gitreleasetracker2:
-#    container_name: ContainerName2
-#    restart: unless-stopped
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    environment:
-#      DISCORD_TOKEN: discord-token
-#      GITHUB_TOKEN: github-token
-#      GITHUB_REPO: github-owner/repo # Example: the-eduardo/GitReleaseTracker
-#      DISCORD_CHANNEL: discord-channel-id-2
-#      WAITING_TIME: 10
-#      CUSTOM_DISCORD_MESSAGE: <@someid> check this release # Optional custom message to send to discord
-#  gitreleasetracker3:
-#    container_name: ContainerName3
-#    restart: unless-stopped
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    environment:
-#      DISCORD_TOKEN: discord-token
-#      GITHUB_TOKEN: github-token
-#      GITHUB_REPO: github-owner/repo # Example: the-eduardo/GitReleaseTracker
-#      DISCORD_CHANNEL: discord-channel-id-3
-#      WAITING_TIME: 15
-#      CUSTOM_DISCORD_MESSAGE: <@someid> check this release # Optional custom message to send to discord
+      JSON_FILE_PATH: # Custom path to the json file, default is repos.json

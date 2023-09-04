@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -18,10 +19,11 @@ type Config struct {
 	DiscordToken   string
 	GithubToken    string
 	GithubOwner    string
-	GithubRepo     string
+	GithubRepo     []string
 	DiscordChannel string
 	CustomMessage  string
 	PollInterval   time.Duration
+	JsonFilePath   string
 }
 
 // Discord and GitHub configurations
@@ -30,15 +32,31 @@ func readConfig() *Config {
 
 	cfg.DiscordToken = os.Getenv("DISCORD_TOKEN")
 	cfg.GithubToken = os.Getenv("GITHUB_TOKEN")
-	inputURL := os.Getenv("GITHUB_REPO")
-	// Split the URL by "/"
-	parts := strings.Split(inputURL, "/")
-	// Check if the URL has the expected number of parts
-	if len(parts) < 2 {
-		log.Fatalf("Invalid GitHub repo! Try something like -the-eduardo/GitReleaseTracker- your input: %s", inputURL)
+
+	// Read the JSON file containing repository list
+	jsonFilePath := os.Getenv("JSON_FILE_PATH")
+	if jsonFilePath == "" {
+		jsonFilePath = "repos.json" // Default to current directory
 	}
-	cfg.GithubOwner = parts[len(parts)-2]
-	cfg.GithubRepo = parts[len(parts)-1]
+
+	file, err := os.ReadFile(jsonFilePath)
+	if err != nil {
+		log.Fatalf("Error reading .json file (%v): %v", jsonFilePath, err)
+	}
+
+	var repos struct {
+		Repositories []string `json:"repositories"`
+	}
+
+	if err := json.Unmarshal(file, &repos); err != nil {
+		log.Fatalf("Error unmarshaling GitHub repositories from JSON: %v", err)
+	}
+
+	// Set the GithubRepo field to the first repository in the list (you can modify this logic as needed)
+	cfg.GithubRepo = repos.Repositories
+	if len(cfg.GithubRepo) == 0 {
+		log.Fatalf("No repositories found in the JSON file")
+	}
 
 	cfg.DiscordChannel = os.Getenv("DISCORD_CHANNEL")
 	cfg.CustomMessage = os.Getenv("CUSTOM_DISCORD_MESSAGE")
@@ -61,7 +79,6 @@ func readConfig() *Config {
 	requiredEnvVars := []string{
 		"DISCORD_TOKEN",
 		"GITHUB_TOKEN",
-		"GITHUB_REPO",
 		"DISCORD_CHANNEL",
 	}
 	for _, envVar := range requiredEnvVars {
@@ -92,15 +109,42 @@ func main() {
 	tc := oauth2.NewClient(ctx, ts)
 	githubClient := github.NewClient(tc)
 
-	// Keep track of the latest release tag
-	var latestReleaseTag string
+	// Create a channel to signal when all Goroutines have finished
+	done := make(chan bool)
 
+	// Iterate over each repository and launch a Goroutine
+	for _, repo := range cfg.GithubRepo {
+		go checkRepositoryForReleases(discord, cfg, repo, githubClient, ctx, done)
+	}
+
+	// Wait for all Goroutines to finish
+	for range cfg.GithubRepo {
+		<-done
+	}
+}
+
+func checkRepositoryForReleases(discord *discordgo.Session, cfg *Config, repo string, githubClient *github.Client, ctx context.Context, done chan<- bool) {
+	var latestReleaseTag, owner, repoName string
+
+	parts := strings.Split(repo, "/")
+	if len(parts) == 2 {
+		owner = parts[0]
+		repoName = parts[1]
+	} else {
+		log.Fatalf("Invalid format. Expected 'Owner/RepoName', got '%s'", repo)
+	}
+
+	defer func() {
+		done <- true // Signal that this Goroutine has finished
+	}()
 	for {
 		// Check for new releases in the GitHub repository
-		releases, _, err := githubClient.Repositories.ListReleases(ctx, cfg.GithubOwner, cfg.GithubRepo, nil)
+		releases, _, err := githubClient.Repositories.ListReleases(ctx, owner, repoName, nil)
 		if err != nil {
-			log.Printf("Error fetching releases: %v", err)
-			continue
+			log.Printf("Error fetching releases for %s: %v", repo, err)
+			// Sleep and retry after an interval on error
+			time.Sleep(cfg.PollInterval * time.Minute)
+			continue // Continue to the next iteration
 		}
 
 		// Check if there are new releases
@@ -109,17 +153,17 @@ func main() {
 			latestRelease := releases[0]
 			newReleaseTag := *latestRelease.TagName
 
-			// If it's a new release, send a message to Discord
+			/// If it's a new release, send a message to Discord
 			if newReleaseTag != latestReleaseTag {
 				latestReleaseTag = newReleaseTag
 				message := fmt.Sprintf(`# New release in https://github.com/%s/%s
 > ### Version/Tag: %s
-%s`, cfg.GithubOwner, cfg.GithubRepo, latestReleaseTag, cfg.CustomMessage)
+%s`, owner, repoName, latestReleaseTag, cfg.CustomMessage)
 				sendMessageToDiscord(discord, cfg.DiscordChannel, message)
 			}
 		} else {
 			// If there are no releases, send a message to Discord
-			message := fmt.Sprintf("# WARNING! \n ### No releases found in https://github.com/%s/%s", cfg.GithubOwner, cfg.GithubRepo)
+			message := fmt.Sprintf("# WARNING! \n ### No releases found in https://github.com/%s/%s", cfg.GithubOwner, repo)
 			sendMessageToDiscord(discord, cfg.DiscordChannel, message)
 		}
 
