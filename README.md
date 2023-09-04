@@ -8,7 +8,7 @@ GitReleaseTracker is a Discord bot designed to keep your community updated with 
 
 - [Requirements](#Requirements)
 - [Getting Started](#getting-started)
-- [Important!](#Important!)
+- [Important](#Important)
 - [Understanding the Code](#understanding-the-code)
 - [Contributing](#contributing)
 - [License](#license)
@@ -51,7 +51,7 @@ git clone https://github.com/the-eduardo/GitReleaseTracker
    ```bash
    docker-compose up -d --build
    ```
-## Important!
+## Important
 
 My Dockerfile is set to build an application image that's compatible with `arm64` Linux architectures. This is determined by `GOARCH=arm64 GOOS=linux` in the Go build command within the Dockerfile.
 
