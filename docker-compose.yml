@@ -1,7 +1,7 @@
 version: '3'
 services:
-  GitReleaseTracker:
-    container_name: GitReleaseTracker1
+  gitreleasetracker:
+    container_name: ContainerName1
     restart: unless-stopped
     build:
       context: .
@@ -14,8 +14,8 @@ services:
       DISCORD_CHANNEL: discord-channel-id-1
       WAITING_TIME: 60 # Minutes to wait before checking for new releases, max 1440 (24 hours)
 
-#  GitReleaseTracker2:
-#    container_name: GitReleaseTracker2
+#  gitreleasetracker2:
+#    container_name: ContainerName2
 #    restart: unless-stopped
 #    build:
 #      context: .
@@ -28,8 +28,8 @@ services:
 #      DISCORD_CHANNEL: discord-channel-id-2
 #      WAITING_TIME: 10
 #
-#  GitReleaseTracker3:
-#    container_name: GitReleaseTracker3
+#  gitreleasetracker3:
+#    container_name: ContainerName3
 #    restart: unless-stopped
 #    build:
 #      context: .
