@@ -26,6 +26,10 @@ If you don't have Docker installed already, you can download it from the [offici
 - ### Docker Compose
 
 The easiest and recommended way to get Docker Compose is to install Docker Desktop. Docker Desktop includes Docker Compose along with Docker Engine and Docker CLI which are Compose prerequisites.
+
+- ### Discord Bot Token
+
+You can get a key here: [Discord Developer Portal](https://discord.com/developers/applications)
 ## Getting Started
 
 To use GitReleaseTracker, follow these steps:
@@ -36,17 +40,25 @@ git clone https://github.com/the-eduardo/GitReleaseTracker
 ```
 
 2. **Configuration:**
-   - Add your Tokens `docker-compose.yml` file:
+    - Add your Tokens to the `docker-compose.yml` file:
 
-     ```env
-     DISCORD_TOKEN=your-discord-bot-token
-     GITHUB_TOKEN=your-github-api-token
-     GITHUB_OWNER=github-account-owner # Who owns the repo
-     GITHUB_REPO=github-repository # Repo name
-     DISCORD_CHANNEL=discord-channel-id
-     WAITING_TIME=60 # Minutes to wait before checking for new releases, max 1440 (24 hours)
-     ```
-
+      ```yml
+      DISCORD_TOKEN: your-discord-bot-token # You can get a key here: https://discord.com/developers/applications
+      GITHUB_TOKEN: your-github-api-token
+      DISCORD_CHANNEL: discord-channel-id # Channel ID to send messages
+      WAITING_TIME: 60 # Minutes to wait before checking for new releases, max 1440 (24 hours)
+      CUSTOM_DISCORD_MESSAGE: <@someid> check this release # Optional: custom message to send to discord
+      ```
+        - Add your repo list to the `repos.json` file:
+      ```json
+       {
+        "repositories": [
+             "github-owner/repo1",
+             "github-owner/repo2",
+             "github-owner/repo3"
+            ]
+       }
+      ```
 3. **Run the Bot using docker compose:**
 
    ```bash
